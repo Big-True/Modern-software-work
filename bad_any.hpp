@@ -4,9 +4,9 @@ template <typename T>
 class base_data
 {
 public:
-    T base_data;
+    T T_data;
     base_data<T>() = default;
-    base_data<T>(T T_data) : data(T_data){};
+    base_data<T>(T T_data) : T_data(T_data){};
     ~base_data<T>() = default;
 };
 class base_any
@@ -19,6 +19,11 @@ public:
     base_any();
     template <typename T>
     base_any(T data) : data(new T(data)), id(typeid(T)){};
+    template <typename T>
+    base_any operator=(const base_any &T_data)
+    {
+        return copy(T_data);
+    }
     ~base_any()
     {
         clear();
@@ -48,6 +53,11 @@ public:
         delete data;
         data = nullptr;
     }
+    template <typename T>
+    base_any copy(const base_any & T_data)
+    {
+        return base_any(std::copy(data->T_data));
+    }
 };
 
 class any
@@ -61,9 +71,14 @@ public:
     any(T T_data) : data(base_any(T_data)){};
     ~any() = default;
     template <typename T>
-    any operator=(any T_data){
+    any operator=(T T_data)
+    {
         data.set<T>(T_data.data.get<T>());
         return *this;
+    }
+    any operator=(const any &T_data)
+    {
+        
     }
     template <typename T>
     void emplace(T T_data)
@@ -82,6 +97,22 @@ public:
     {
         return data.type();
     }
+    void swap(any T_data)
+    {
+        std::swap(data,T_data.data);
+    }
+    template <typename T>
+    T get()
+    {
+        if (data.empty())
+        {
+            //throw in here
+        }
+        else
+        {
+            return data.get<T>();
+        }
+    }
 };
 class any_cast
 {
@@ -94,12 +125,11 @@ class any_cast
         }
         else
         {
+            //throw in here
         }
     };
 };
 void std::swap(any any1, any any2)
 {
-    if (any1.type() == any2.type())
-    {
-    }
+    any1.swap(any2);
 }
