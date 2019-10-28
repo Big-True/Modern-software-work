@@ -9,12 +9,14 @@ public:
     i_data()=delete;
     i_data(T r_data):t_data(r_data){};
     ~i_data();
+    const std::type_info &type(){
+        return typeid(T);
+    }
 };
 class base_any
 {
 public:
     i_data<void>* s_data=nullptr;
-    std::type_info tyid;
     base_any();
     template<typename T>
     base_any(T t_data){
@@ -35,10 +37,9 @@ public:
         }
         s_data=std::malloc(sizeof(i_data<T>));
         *s_data=i_data<T>(t_data);
-        tyid=typeid(T);
     }
     const std::type_info &type(){
-        return tyid;
+        return s_data->type();
     }
     bool has_value(){
         return s_data!=nullptr;
@@ -61,6 +62,7 @@ public:
     any();
     template<typename T>
     any(T t_data){
+        reset();
         data=new base_any(t_data);
     }
     ~any(){
