@@ -2,6 +2,7 @@
     "files.associations": {
         "string": "cpp",
         "optional": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "algorithm": "cpp"
     }
 }
