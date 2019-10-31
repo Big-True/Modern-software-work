@@ -114,12 +114,7 @@ public:
         }
     }
     any operator=(any a1){
-        if(has_value()){
-            reset();
-        }
-        if(a1.has_value()){
-            this->data=new base_any(a1);
-        }
+        this->data=a1.data;
         return *this;
     }
     bool has_value()
