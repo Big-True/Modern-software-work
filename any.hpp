@@ -6,7 +6,8 @@ class base_i_data
 public:
     base_i_data(){};
     virtual const std::type_info &type(){};
-    virtual base_i_data *clone(){
+    virtual base_i_data *clone()
+    {
         return new base_i_data();
     }
 };
@@ -23,7 +24,8 @@ public:
     {
         return tyid;
     }
-    virtual i_data *clone(){
+    virtual i_data *clone()
+    {
         return new i_data(t_data);
     }
 };
@@ -84,7 +86,8 @@ public:
             //throw in here
         }
     }
-    base_any *clone(){
+    base_any *clone()
+    {
         return new base_any(s_data->clone());
     }
 };
@@ -94,7 +97,7 @@ private:
     base_any *data = nullptr;
 
 public:
-    any()=default;
+    any() = default;
     template <typename T>
     any(T t_data)
     {
@@ -105,16 +108,20 @@ public:
     {
         reset();
     };
-    any(const any &a1){
-        if(a1.data!=nullptr){
-            data=new base_any();
+    any(const any &a1)
+    {
+        if (a1.data != nullptr)
+        {
+            data = new base_any();
         }
-        else{
+        else
+        {
             //throw in here
         }
     }
-    any operator=(any a1){
-        this->data=a1.data;
+    any operator=(any a1)
+    {
+        this->data = a1.data;
         return *this;
     }
     bool has_value()
@@ -153,21 +160,23 @@ public:
     template <typename T>
     T get()
     {
-        if(has_value()){
+        if (has_value())
+        {
             return data->get<T>();
         }
-        else{
+        else
+        {
             //throw in here
         }
     }
 };
 namespace std
 {
-    void swap(any a1, any a2)
-    {
-        a1.swap(a2);
-    }
+void swap(any a1, any a2)
+{
+    a1.swap(a2);
 }
+} // namespace std
 
 template <typename T>
 T any_cast(any a)
