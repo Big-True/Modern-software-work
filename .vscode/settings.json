@@ -3,6 +3,9 @@
         "string": "cpp",
         "optional": "cpp",
         "typeinfo": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "memory": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }

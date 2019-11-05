@@ -3,12 +3,14 @@
 #include <algorithm>
 
 template <typename T>
+class shared_ptr;
+template <typename T>
 class counter
 {
 private:
     std::size_t shared_ptr_times;
     std::size_t weak_ptr_times;
-    std::vector<shared_ptr<T>> v_ptr;
+    std::vector<shared_ptr<T> *> v_ptr;
     T *ptr;
 
 public:
@@ -22,7 +24,7 @@ public:
     }
     ~counter()
     {
-        delete ptr;
+        clear();
     }
     T *get()
     {
@@ -36,26 +38,31 @@ public:
     {
         return weak_ptr_times;
     }
-    counter<T> *get_shared_ptr()
+    T *get_shared_ptr(shared_ptr<T> *s_ptr)
     {
         shared_ptr_times++;
+        v_ptr.push_back(s_ptr);
         return ptr;
     }
-    void delete_shared_ptr(shared_ptr<T> t_ptr)
+    void delete_shared_ptr(shared_ptr<T> *t_ptr)
     {
-        shared_ptr_times--;
         for (auto i = v_ptr.begin(); i != v_ptr.end(); ++i)
         {
             if (*i == t_ptr)
             {
                 v_ptr.erase(i);
+                shared_ptr_times--;
                 break;
             }
         }
         if (shared_ptr_times == 0 && weak_ptr_times == 0)
         {
-            ~counter();
+            clear();
         }
+    }
+    void clear()
+    {
+        delete ptr;
     }
 };
 
@@ -64,35 +71,34 @@ class shared_ptr
 {
 private:
     T *ptr = nullptr;
-    counter *count = nullptr;
+    counter<T> *count = nullptr;
 
 public:
     shared_ptr() = default;
     shared_ptr(T *p_data)
     {
         count = new counter<T>(p_data, this);
+        ptr = p_data;
     };
     ~shared_ptr()
     {
-        if (count != nullptr)
-        {
-            count->delete_shared_ptr(this);
-        }
+        clear();
     }
     shared_ptr<T> operator=(shared_ptr<T> s)
     {
-        ~shared_ptr();
+        clear();
         if (s)
         {
-            ptr = s.ptr->get_shared_ptr();
+            count = s.count;
+            ptr = s.count->get_shared_ptr(this);
         }
         return *this;
     };
     T &operator*()
     {
-        return *ptr;
+        return *get();
     }
-    bool operator bool()
+    explicit operator bool()
     {
         return get() != nullptr;
     }
@@ -102,15 +108,17 @@ public:
     }
     T *operator->()
     {
-        return get();
+        return *get();
     }
-    element_type &operator[](std::size_t id) const
+    template <class Y>
+    Y &operator[](std::size_t id) const
     {
         return get()[id];
     }
     void reset(T *p_data)
     {
-        ~shared_ptr();
+        clear();
+        ptr = p_data;
         count = new counter<T>(p_data, this);
     }
     std::size_t use_count()
@@ -126,6 +134,13 @@ public:
         std::swap(ptr, s_data.ptr);
         std::swap(count, s_data.count);
     }
+    void clear()
+    {
+        if (count != nullptr)
+        {
+            count->delete_shared_ptr(this);
+        }
+    }
     template <class Y>
     bool owner_before(const shared_ptr<Y> &s_data) const
     {
@@ -133,8 +148,16 @@ public:
         {
             if (count == s_data.count && count != nullptr)
             {
-                return std::find(count->v_ptr.begin(), count->v_ptr.end(), this) < std::find(s_data.count->v_ptr.begin(), s_data.count->v_ptr.end(), s_data.this)
+                return std::find(count->v_ptr.begin(), count->v_ptr.end(), this) < std::find(s_data.count->v_ptr.begin(), s_data.count->v_ptr.end(), s_data.get_this());
             }
         }
+        else
+        {
+            return false;
+        }
+    }
+    shared_ptr *get_this()
+    {
+        return this;
     }
 };
